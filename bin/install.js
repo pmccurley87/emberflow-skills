@@ -131,9 +131,13 @@ async function authenticate() {
   // Try to open the URL automatically
   try {
     const { exec } = require('child_process');
-    const cmd = process.platform === 'darwin' ? 'open' :
-                process.platform === 'win32' ? 'start' : 'xdg-open';
-    exec(`${cmd} "${verification_url}"`);
+    if (process.platform === 'win32') {
+      exec(`start "" "${verification_url}"`);
+    } else if (process.platform === 'darwin') {
+      exec(`open "${verification_url}"`);
+    } else {
+      exec(`xdg-open "${verification_url}"`);
+    }
   } catch {}
 
   process.stdout.write(`  ${dim('Waiting for approval...')}`);
