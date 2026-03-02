@@ -1,6 +1,6 @@
 {
   "name": "emberflow-skills",
-  "version": "1.1.2",
+  "version": "1.2.0",
   "description": "Install Emberflow skills for AI coding tools",
   "bin": {
     "emberflow-skills": "./bin/install.js"
@@ -13,7 +13,9 @@
     "mcp",
     "ai",
     "documentation",
-    "mermaid"
+    "mermaid",
+    "json",
+    "json-explorer"
   ],
   "author": "Patrick",
   "license": "MIT",

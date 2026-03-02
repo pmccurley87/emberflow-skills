@@ -7,8 +7,8 @@ const http = require('http');
 const readline = require('readline');
 const os = require('os');
 
-const SKILL_NAME = 'ember-publish';
-const SKILL_SRC = path.join(__dirname, '..', 'skills', SKILL_NAME, 'SKILL.md');
+const SKILL_NAMES = ['ember-publish', 'ember-publish-json'];
+const SKILLS_DIR = path.join(__dirname, '..', 'skills');
 const EMBERFLOW_URL = 'https://www.emberflow.ai';
 const TOKEN_PATH = path.join(os.homedir(), '.emberflow', 'token.json');
 
@@ -80,11 +80,14 @@ function sleep(ms) {
 // ── Skill installer ──
 
 function install(destDir, label) {
-  const skillDir = path.join(destDir, SKILL_NAME);
-  const destFile = path.join(skillDir, 'SKILL.md');
-  fs.mkdirSync(skillDir, { recursive: true });
-  fs.copyFileSync(SKILL_SRC, destFile);
-  console.log(`  ${green('✓')} Installed to ${path.relative(process.cwd(), skillDir) || skillDir} ${dim(`(${label})`)}`);
+  for (const name of SKILL_NAMES) {
+    const src = path.join(SKILLS_DIR, name, 'SKILL.md');
+    const skillDir = path.join(destDir, name);
+    const destFile = path.join(skillDir, 'SKILL.md');
+    fs.mkdirSync(skillDir, { recursive: true });
+    fs.copyFileSync(src, destFile);
+    console.log(`  ${green('✓')} Installed ${name} to ${path.relative(process.cwd(), skillDir) || skillDir} ${dim(`(${label})`)}`);
+  }
   return true;
 }
 
@@ -151,8 +154,10 @@ async function authenticate() {
       const status = await request('GET', `${EMBERFLOW_URL}/api/device-code/${code}`);
 
       if (status.data.status === 'approved' && status.data.session_token) {
+        // Strip cookie name prefix if present (e.g. "__Secure-better-auth.session_token=VALUE" -> "VALUE")
+        const raw = status.data.session_token.replace(/^(?:__Secure-)?better-auth\.session_token=/, '');
         fs.mkdirSync(path.dirname(TOKEN_PATH), { recursive: true });
-        fs.writeFileSync(TOKEN_PATH, JSON.stringify({ token: status.data.session_token }, null, 2));
+        fs.writeFileSync(TOKEN_PATH, JSON.stringify({ token: raw }, null, 2));
         process.stdout.clearLine(0);
         process.stdout.cursorTo(0);
         console.log(`  ${green('✓')} Signed in! Token saved to ${dim('~/.emberflow/token.json')}`);
@@ -222,7 +227,7 @@ async function main() {
 
     if (installed > 0) {
       console.log();
-      console.log(`  Use: ${cyan('/ember-publish')} ${dim('[topic]')}`);
+      console.log(`  Use: ${cyan('/ember-publish')} ${dim('[topic]')}  or  ${cyan('/ember-publish-json')} ${dim('[data]')}`);
     }
   }
 

@@ -6,7 +6,7 @@ argument-hint: [topic or description of what to document]
 
 # Emberflow Document Publisher
 
-Create a polished markdown document and publish it to Emberflow — a hosted viewer at **https://www.emberflow.ai** with Mermaid diagram rendering (zoom/pan/fullscreen), dark mode, font selection, and per-block commenting.
+Create a polished markdown document and publish it to Emberflow — a hosted viewer at **https://emberflow.ai** with Mermaid diagram rendering (zoom/pan/fullscreen), dark mode, font selection, and per-block commenting.
 
 ## Step 1: Create the Markdown File
 
@@ -124,13 +124,13 @@ If the file exists, verify the token still works:
 
 ```bash
 curl -s -H "Authorization: Bearer $(jq -r .token ~/.emberflow/token.json)" \
-  https://www.emberflow.ai/api/docs
+  https://emberflow.ai/api/docs
 ```
 
 If no session exists, it's expired, or the verify call returns 401, authenticate using the device flow:
 
 ```bash
-EMBERFLOW_URL="https://www.emberflow.ai"
+EMBERFLOW_URL="https://emberflow.ai"
 
 # Step 1: Request a device code
 RESP=$(curl -s -X POST "$EMBERFLOW_URL/api/device-code")
@@ -165,7 +165,7 @@ Generate a slug from the document title and publish using the API:
 
 ```bash
 # Read the file, extract title, generate slug, and publish
-EMBERFLOW_URL="https://www.emberflow.ai"
+EMBERFLOW_URL="https://emberflow.ai"
 FILE_PATH="/absolute/path/to/document.md"
 TITLE=$(head -1 "$FILE_PATH" | sed 's/^#\s*//')
 SLUG=$(echo "$TITLE" | tr '[:upper:]' '[:lower:]' | tr -cs 'a-z0-9' '-' | sed 's/^-//;s/-$//')
@@ -179,9 +179,12 @@ curl -s -X POST "$EMBERFLOW_URL/api/docs" \
 ```
 
 The response JSON includes the URL. Documents are viewable at:
-- Public: `https://www.emberflow.ai/d/<shortId>/<slug>`
+- Public: `https://emberflow.ai/d/<slug>`
+- Private: `https://emberflow.ai/d/<slug>?key=<private-key>`
 
 To **update** an existing document, publish again with the same slug — the API upserts for the same author.
+
+> **JSON documents**: You can also publish JSON data by passing `content_type: "json"` in the API payload. The content should be valid JSON (either raw data or the multi-payload format `{"payloads": [{"label": "...", "data": ...}]}`). Use the `/ember-publish-json` skill for a dedicated JSON publishing workflow.
 
 ### Other Operations
 
