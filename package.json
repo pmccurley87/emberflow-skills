@@ -1,6 +1,6 @@
 {
   "name": "emberflow-skills",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "Install Emberflow skills for AI coding tools",
   "bin": {
     "emberflow-skills": "./bin/install.js"

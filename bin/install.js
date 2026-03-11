@@ -7,7 +7,7 @@ const http = require('http');
 const readline = require('readline');
 const os = require('os');
 
-const SKILL_NAMES = ['ember-publish', 'ember-publish-json', 'ember-publish-space'];
+const SKILL_NAMES = ['ember-publish', 'ember-publish-doc', 'ember-publish-json', 'ember-publish-space'];
 const SKILLS_DIR = path.join(__dirname, '..', 'skills');
 const EMBERFLOW_URL = 'https://www.emberflow.ai';
 const TOKEN_PATH = path.join(os.homedir(), '.emberflow', 'token.json');
@@ -227,7 +227,8 @@ async function main() {
 
     if (installed > 0) {
       console.log();
-      console.log(`  Use: ${cyan('/ember-publish')} ${dim('[topic]')}  or  ${cyan('/ember-publish-json')} ${dim('[data]')}  or  ${cyan('/ember-publish-space')} ${dim('[directory]')}`);
+      console.log(`  Use: ${cyan('/ember-publish')} ${dim('[topic]')}  — auto-picks format (doc, JSON, or Space)`);
+      console.log(`       ${cyan('/ember-publish-doc')} ${dim('[topic]')}  ${cyan('/ember-publish-json')} ${dim('[data]')}  ${cyan('/ember-publish-space')} ${dim('[directory]')}`);
     }
   }
 
