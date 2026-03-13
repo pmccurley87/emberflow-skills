@@ -1,5 +1,5 @@
 ---
-name: ember-visual
+name: ember-publish-explainer
 description: Generate an interactive visual explainer — AI chooses the best visualization (flowchart, chart, timeline, grid, etc.) for the topic
 argument-hint: [topic or concept to explain visually]
 ---
