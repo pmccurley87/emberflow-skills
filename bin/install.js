@@ -7,7 +7,7 @@ const http = require('http');
 const readline = require('readline');
 const os = require('os');
 
-const SKILL_NAMES = ['ember-publish', 'ember-publish-doc', 'ember-publish-json', 'ember-publish-space'];
+const SKILL_NAMES = ['ember-publish', 'ember-publish-doc', 'ember-publish-json', 'ember-publish-space', 'ember-visual'];
 const SKILLS_DIR = path.join(__dirname, '..', 'skills');
 const EMBERFLOW_URL = 'https://www.emberflow.ai';
 const TOKEN_PATH = path.join(os.homedir(), '.emberflow', 'token.json');
@@ -79,13 +79,33 @@ function sleep(ms) {
 
 // ── Skill installer ──
 
+function copyDirRecursive(src, dest) {
+  fs.mkdirSync(dest, { recursive: true });
+  for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
+    const srcPath = path.join(src, entry.name);
+    const destPath = path.join(dest, entry.name);
+    if (entry.isDirectory()) {
+      copyDirRecursive(srcPath, destPath);
+    } else {
+      fs.copyFileSync(srcPath, destPath);
+    }
+  }
+}
+
 function install(destDir, label) {
   for (const name of SKILL_NAMES) {
-    const src = path.join(SKILLS_DIR, name, 'SKILL.md');
+    const srcDir = path.join(SKILLS_DIR, name);
     const skillDir = path.join(destDir, name);
     const destFile = path.join(skillDir, 'SKILL.md');
     fs.mkdirSync(skillDir, { recursive: true });
-    fs.copyFileSync(src, destFile);
+    fs.copyFileSync(path.join(srcDir, 'SKILL.md'), destFile);
+
+    // Copy templates directory if it exists
+    const templatesDir = path.join(srcDir, 'templates');
+    if (fs.existsSync(templatesDir)) {
+      copyDirRecursive(templatesDir, path.join(skillDir, 'templates'));
+    }
+
     console.log(`  ${green('✓')} Installed ${name} to ${path.relative(process.cwd(), skillDir) || skillDir} ${dim(`(${label})`)}`);
   }
   return true;

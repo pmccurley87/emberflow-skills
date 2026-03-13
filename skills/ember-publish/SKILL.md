@@ -13,17 +13,20 @@ Publish content to Emberflow at **https://emberflow.ai**. This skill automatical
 | A topic or markdown description | Markdown document with Mermaid diagrams | `/ember-publish-doc` |
 | JSON data or a `.json` file | Interactive JSON explorer with tree + graph | `/ember-publish-json` |
 | A directory of `.md` files | Multi-page docs site (Space) with sidebar nav | `/ember-publish-space` |
+| An interactive visual explanation of a concept | Interactive slide-based HTML explainer | `/ember-visual` |
 
 ## How to Decide
 
-1. **If the user provides a directory path** or mentions "docs site", "space", or "multi-page" → use the `/ember-publish-space` workflow
-2. **If the user provides a `.json` file**, JSON data, or asks to publish JSON/API responses → use the `/ember-publish-json` workflow
-3. **Otherwise** (topic description, markdown file, or general documentation request) → use the `/ember-publish-doc` workflow
+1. **If the user asks for an interactive explainer**, visual walkthrough, animated diagram, or slide-based explanation → use the `/ember-visual` workflow
+2. **If the user provides a directory path** or mentions "docs site", "space", or "multi-page" → use the `/ember-publish-space` workflow
+3. **If the user provides a `.json` file**, JSON data, or asks to publish JSON/API responses → use the `/ember-publish-json` workflow
+4. **Otherwise** (topic description, markdown file, or general documentation request) → use the `/ember-publish-doc` workflow
 
 ## Delegation
 
 Once you've determined the content type, follow the full instructions from the appropriate specific skill:
 
+- **Interactive visual explainer** → Follow `/ember-visual` instructions exactly
 - **Markdown documents** → Follow `/ember-publish-doc` instructions exactly
 - **JSON data** → Follow `/ember-publish-json` instructions exactly
 - **Directory / Space** → Follow `/ember-publish-space` instructions exactly
