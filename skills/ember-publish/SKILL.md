@@ -10,7 +10,7 @@ Publish content to Emberflow at **https://emberflow.ai**. This skill automatical
 
 | Content | Published as | Equivalent skill |
 |---------|-------------|-----------------|
-| A topic or markdown description | Markdown document with Mermaid diagrams | `/ember-publish-doc` |
+| A topic or markdown description | Markdown document with emberDiagrams | `/ember-publish-doc` |
 | JSON data or a `.json` file | Interactive JSON explorer with tree + graph | `/ember-publish-json` |
 | A directory of `.md` files | Multi-page docs site (Space) with sidebar nav | `/ember-publish-space` |
 | An interactive visual explanation of a concept | Interactive slide-based HTML explainer | `/ember-publish-explainer` |

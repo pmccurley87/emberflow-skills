@@ -6,7 +6,9 @@ argument-hint: [directory path or file list]
 
 # Emberflow Space Publisher
 
-Publish a collection of markdown files as an **Emberflow Space** — a multi-page docs site at **https://emberflow.ai** with sidebar navigation, Mermaid diagram rendering, dark mode, and per-block commenting.
+Publish a collection of markdown files as an **Emberflow Space** — a multi-page docs site at **https://emberflow.ai** with sidebar navigation, emberDiagrams, dark mode, and per-block commenting.
+
+Each markdown page in a Space supports inline `<explainer>` diagram blocks — use `<explainer type="diagram">` for auto-layout architecture diagrams, or raw HTML `<explainer>` blocks for custom visualisations. See the `/ember-publish-doc` skill for the full emberDiagrams syntax reference.
 
 ## Step 1: Collect Files
 

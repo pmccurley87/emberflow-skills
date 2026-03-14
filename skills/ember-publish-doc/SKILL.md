@@ -1,12 +1,12 @@
 ---
 name: ember-publish-doc
-description: Publish a markdown document with Mermaid diagrams to Emberflow for hosted viewing with comments
+description: Publish a markdown document with emberDiagrams to Emberflow for hosted viewing with comments
 argument-hint: [topic or description of what to document]
 ---
 
 # Emberflow Document Publisher
 
-Create a polished markdown document and publish it to Emberflow — a hosted viewer at **https://emberflow.ai** with Mermaid diagram rendering (zoom/pan/fullscreen), dark mode, font selection, and per-block commenting.
+Create a polished markdown document and publish it to Emberflow — a hosted viewer at **https://emberflow.ai** with emberDiagrams (auto-layout interactive diagrams), dark mode, font selection, and per-block commenting.
 
 ## Step 1: Create the Markdown File
 
@@ -17,43 +17,88 @@ Write a `.md` file in the current project. The document should follow these conv
 - Use `##` and `###` for sections — these become commentable blocks in the viewer
 - Keep paragraphs concise — each paragraph, list, table, blockquote, and heading is independently commentable by readers
 
-### Mermaid Diagrams
+### emberDiagrams
 
-Use fenced code blocks with the `mermaid` language tag. The viewer renders them with zoom, pan, and fullscreen controls.
+Use inline `<explainer>` blocks for interactive diagrams. The platform auto-lays-out nodes using the dagre graph engine — no manual coordinates needed.
 
-````markdown
-```mermaid
-graph LR
-    A[Start] --> B{Decision}
-    B -->|Yes| C[Action]
-    B -->|No| D[Other Action]
+#### Declarative Diagrams (auto-layout)
+
+Set the `<explainer>` type to `diagram` and provide a JSON object with `nodes` and `edges`:
+
+```markdown
+<explainer type="diagram">
+{
+  "nodes": [
+    { "id": "client", "label": "Web Client", "style": "blue" },
+    { "id": "api", "label": "API Gateway", "style": "orange" },
+    { "id": "db", "label": "PostgreSQL", "style": "green", "icon": "database" }
+  ],
+  "edges": [
+    { "from": "client", "to": "api", "label": "REST" },
+    { "from": "api", "to": "db" }
+  ]
+}
+</explainer>
 ```
-````
 
-Supported diagram types:
-- `graph` / `flowchart` — flow diagrams (LR, TD, etc.)
-- `sequenceDiagram` — interaction sequences
-- `classDiagram` — class relationships
-- `stateDiagram-v2` — state machines
-- `erDiagram` — entity relationships
-- `gantt` — project timelines
-- `pie` — pie charts
-- `gitgraph` — git branch visualizations
-- `mindmap` — mind maps
-- `timeline` — chronological events
+Node styles: `blue`, `green`, `orange`, `red`, `purple` — these are color-coded with matching borders and tinted backgrounds.
 
-#### Dark Mode Color Palette
+Node icons (optional): `server`, `database`, `browser`, `code`, `cloud`, `lock`, `user`, `file`, `api`, `cpu`, `network`, `zap`, `box`.
 
-The viewer auto-remaps these light colors to dark equivalents. Use them for best cross-theme rendering:
+For grouped architecture diagrams, add a `groups` array:
 
-| Color | Use For |
-|---|---|
-| `#e1f5fe` | Blue backgrounds |
-| `#e8f5e9` | Green backgrounds |
-| `#fff3e0` | Orange backgrounds |
-| `#fce4ec` | Red backgrounds |
-| `#f3e5f5` | Purple backgrounds |
-| `#fff9c4` | Yellow backgrounds |
+```markdown
+<explainer type="diagram">
+{
+  "groups": [
+    { "label": "Frontend", "nodes": ["client", "cdn"] },
+    { "label": "Backend", "nodes": ["api", "worker", "db"] }
+  ],
+  "nodes": [
+    { "id": "client", "label": "React App", "icon": "browser" },
+    { "id": "cdn", "label": "CDN", "icon": "cloud" },
+    { "id": "api", "label": "API Server", "icon": "server" },
+    { "id": "worker", "label": "Worker", "icon": "cpu" },
+    { "id": "db", "label": "Database", "icon": "database" }
+  ],
+  "edges": [
+    { "from": "client", "to": "api" },
+    { "from": "cdn", "to": "client" },
+    { "from": "api", "to": "worker" },
+    { "from": "api", "to": "db" }
+  ]
+}
+</explainer>
+```
+
+#### Custom HTML Diagrams
+
+For richer visualisations, use raw HTML with `<style>` and `<script>`:
+
+```markdown
+<explainer>
+<style>
+.my-viz { display: flex; gap: 12px; }
+.my-card { padding: 16px; border: 1px solid var(--border); border-radius: 10px; }
+</style>
+<div class="my-viz">
+  <div class="my-card">Step 1</div>
+  <div class="my-card">Step 2</div>
+</div>
+<script>
+var cards = container.querySelectorAll('.my-card');
+cards.forEach(function(c, i) {
+  c.style.opacity = '0';
+  setTimeout(function() {
+    c.style.transition = 'opacity 0.3s';
+    c.style.opacity = '1';
+  }, 100 + i * 80);
+});
+</script>
+</explainer>
+```
+
+Use CSS custom properties (`var(--bg)`, `var(--text)`, `var(--border)`, `var(--link)`, etc.) for theme compatibility.
 
 ### Tables, Code, Blockquotes
 
@@ -78,26 +123,23 @@ Brief introduction to the system.
 
 ## Components
 
-```mermaid
-graph TD
-    Client[Web Client] --> API[API Gateway]
-    API --> Auth[Auth Service]
-    API --> Docs[Doc Service]
-    Docs --> DB[(PostgreSQL)]
-```
-
-## Request Flow
-
-```mermaid
-sequenceDiagram
-    participant C as Client
-    participant G as Gateway
-    participant S as Service
-    C->>G: Request
-    G->>S: Forward
-    S->>G: Response
-    G->>C: Response
-```
+<explainer type="diagram">
+{
+  "nodes": [
+    { "id": "client", "label": "Web Client", "style": "blue", "icon": "browser" },
+    { "id": "api", "label": "API Gateway", "style": "orange", "icon": "server" },
+    { "id": "auth", "label": "Auth Service", "style": "purple", "icon": "lock" },
+    { "id": "docs", "label": "Doc Service", "style": "green", "icon": "file" },
+    { "id": "db", "label": "PostgreSQL", "style": "blue", "icon": "database" }
+  ],
+  "edges": [
+    { "from": "client", "to": "api" },
+    { "from": "api", "to": "auth" },
+    { "from": "api", "to": "docs" },
+    { "from": "docs", "to": "db" }
+  ]
+}
+</explainer>
 
 ## Data Model
 

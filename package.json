@@ -1,6 +1,6 @@
 {
   "name": "emberflow-skills",
-  "version": "1.7.0",
+  "version": "1.8.0",
   "description": "Install Emberflow skills for AI coding tools",
   "bin": {
     "emberflow-skills": "./bin/install.js"
@@ -13,7 +13,7 @@
     "mcp",
     "ai",
     "documentation",
-    "mermaid",
+    "diagrams",
     "json",
     "json-explorer"
   ],
