@@ -109,9 +109,9 @@ els.forEach(function(el,i){el.style.opacity="0";el.style.transform="translateY(6
 </explainer>
 ```
 
-**CRITICAL: Vary your visualisations.** Each `<explainer>` block in a document MUST use a different visual pattern. If you used a vertical step flow for one section, the next MUST be a horizontal flow, grid, file tree, comparison table, or something entirely custom. Repeating the same layout makes the document look templated and cheap.
+**Vary your visualisations.** Each diagram in a document should use a different visual pattern — mix vertical steps, horizontal flows, grids, trees, and custom layouts depending on what the content calls for.
 
-**Choosing the right pattern for each section:**
+**Match the pattern to the content:**
 - Sequential process → vertical step flow
 - Data pipeline or request flow → horizontal flow with arrows
 - Multiple options or categories → 2x2 grid or card layout
@@ -120,8 +120,6 @@ els.forEach(function(el,i){el.style.opacity="0";el.style.transform="translateY(6
 - Comparison → side-by-side panels with contrasting colors
 - Feature list → compact icon + label grid
 - Timeline → vertical timeline with dated markers
-
-**Do NOT use `<explainer type="diagram">`.** Always use custom HTML `<explainer>` blocks. The `type="diagram"` format produces generic, uniform output. Custom HTML gives you full control over layout, color, icons, and animation — resulting in visually striking, varied diagrams.
 
 ### Tables, Code, Blockquotes
 
