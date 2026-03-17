@@ -109,37 +109,19 @@ els.forEach(function(el,i){el.style.opacity="0";el.style.transform="translateY(6
 </explainer>
 ```
 
-**Vary your visualisations.** Don't use the same pattern for every diagram in a document. Mix vertical steps, horizontal flows, grids, and file trees depending on what the content calls for.
+**CRITICAL: Vary your visualisations.** Each `<explainer>` block in a document MUST use a different visual pattern. If you used a vertical step flow for one section, the next MUST be a horizontal flow, grid, file tree, comparison table, or something entirely custom. Repeating the same layout makes the document look templated and cheap.
 
-#### Declarative Diagrams (auto-layout, for complex architectures only)
+**Choosing the right pattern for each section:**
+- Sequential process → vertical step flow
+- Data pipeline or request flow → horizontal flow with arrows
+- Multiple options or categories → 2x2 grid or card layout
+- Decision tree or routing → root node branching to options
+- File/directory structure → monospace tree with file icons
+- Comparison → side-by-side panels with contrasting colors
+- Feature list → compact icon + label grid
+- Timeline → vertical timeline with dated markers
 
-For diagrams with **8+ nodes and grouped tiers** (e.g., "Frontend / Backend / Data" architecture), use `<explainer type="diagram">` which auto-computes layout via dagre:
-
-```markdown
-<explainer type="diagram">
-{
-  "groups": [
-    { "label": "Frontend", "nodes": ["client", "cdn"] },
-    { "label": "Backend", "nodes": ["api", "worker", "db"] }
-  ],
-  "nodes": [
-    { "id": "client", "label": "React App", "style": "blue", "icon": "browser" },
-    { "id": "cdn", "label": "CDN", "style": "blue", "icon": "cloud" },
-    { "id": "api", "label": "API Server", "style": "orange", "icon": "server" },
-    { "id": "worker", "label": "Worker", "style": "purple", "icon": "cpu" },
-    { "id": "db", "label": "Database", "style": "green", "icon": "database" }
-  ],
-  "edges": [
-    { "from": "client", "to": "api" },
-    { "from": "cdn", "to": "client" },
-    { "from": "api", "to": "worker" },
-    { "from": "api", "to": "db" }
-  ]
-}
-</explainer>
-```
-
-Node styles: `blue`, `green`, `orange`, `red`, `purple`. Icons: `server`, `database`, `browser`, `code`, `cloud`, `lock`, `user`, `file`, `api`, `cpu`, `network`, `zap`, `box`.
+**Do NOT use `<explainer type="diagram">`.** Always use custom HTML `<explainer>` blocks. The `type="diagram"` format produces generic, uniform output. Custom HTML gives you full control over layout, color, icons, and animation — resulting in visually striking, varied diagrams.
 
 ### Tables, Code, Blockquotes
 
