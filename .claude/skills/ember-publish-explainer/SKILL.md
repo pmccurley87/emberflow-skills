@@ -10,6 +10,8 @@ Generate a **structured JSON** explainer that the Emberflow platform renders as 
 
 You choose the best visualization type for each slide. A single explainer can mix different viz types across slides — a timeline on slide 2, a data table on slide 3, a chart on slide 4.
 
+**Visual diversity is critical.** Every explainer should feel bespoke. Don't fall back on "grid of stat cards" or "list of bordered boxes" as the default — those are just one option among many. Think about what shape the data actually has: is it a flow? Use a Sankey or funnel. A ranking? Use a horizontal bar chart or podium layout. A distribution? Use a heatmap or scatter. A before/after? Use a split comparison. A hierarchy? Use a tree or nested rings. A process? Use a swimlane or animated pipeline. Match the visualization to the shape of the information, not the other way around.
+
 ## Output
 
 Write a single JSON file to `{topic-slug}-explainer.json` in the current working directory. Then publish it to Emberflow.
@@ -163,32 +165,47 @@ No `script` field is needed for diagram slides — the platform handles all anim
 
 ## B. Visualization Primitive Catalog
 
-Choose from these primitives. Compose them freely — combine, nest, or invent new ones as the topic demands.
+This is a **starting point, not a menu to order from**. The best explainers invent visualizations that fit the content perfectly. Combine, adapt, or create entirely new primitives. If none of these fit — build something original.
 
 ### Data Display
 
-- **KPI / stat cards** — Grid of boxes with label, large value, subtitle. Use for overview slides. `display: grid; grid-template-columns: 1fr 1fr; gap: 12px`
-- **Data table** — `<table>` with muted uppercase headers, monospace numbers, color-coded values (green positive, red negative). Category dots on row labels.
-- **Comparison matrix** — Table with checkmark/cross SVG icons per cell. Column headers are options, rows are features. Active column highlighted with accent border.
+- **KPI / stat cards** — Grid of boxes with label, large value, subtitle. Good for overview slides, but don't default to this for everything.
+- **Data table** — `<table>` with muted uppercase headers, monospace numbers, color-coded values. Category dots on row labels.
+- **Comparison matrix** — Table with checkmark/cross SVG icons per cell. Active column highlighted with accent border.
+- **Heatmap grid** — CSS grid where cell background intensity maps to a value. Use color gradients (green→yellow→red or cool→warm). Great for showing density, coverage, or correlation.
+- **Scorecard** — Single large metric in a ring or gauge, with trend sparkline below. Different from KPI cards — more visual weight, fewer items.
 
 ### Charts
 
-- **Vertical bar chart** — Flex row of bars, height as percentage of max. Color-code by threshold (green/orange/red). Hover reveals value label. `transition: height 0.6s cubic-bezier(0.4, 0, 0.2, 1)`
-- **Horizontal bar chart** — Rows with label left, bar extending right. Good for ranked lists. Bar width as percentage via `flex` layout.
-- **Donut / ring chart** — SVG circle with `stroke-dasharray`/`stroke-dashoffset`. Percentage label centered absolutely.
-- **Funnel diagram** — Stacked horizontal bars decreasing in width, centered. Labels and conversion percentages on each stage.
+- **Vertical bar chart** — Flex row of bars, height as percentage of max. Color-code by threshold. Animate height on entrance.
+- **Horizontal bar chart** — Rows with label left, bar extending right. Good for ranked lists, leaderboards, survey results.
+- **Donut / ring chart** — SVG circle with `stroke-dasharray`/`stroke-dashoffset`. Percentage label centered.
+- **Funnel diagram** — Stacked horizontal bars decreasing in width, centered. Show conversion rates between stages.
+- **Waterfall chart** — Bars that float from the previous bar's end. Show how values build up or break down (budget additions/subtractions, funnel drop-offs).
+- **Sparklines / mini line charts** — SVG polylines inside cards or rows. Show trends without axes. Great for time-series context within other layouts.
+- **Stacked bar / segmented bar** — Single horizontal bar divided into colored segments. Show composition at a glance (e.g., traffic sources, time allocation).
+- **Scatter / bubble plot** — SVG circles positioned by x/y data. Size encodes a third dimension. Good for correlation or distribution.
+
+### Flows & Processes
+
+- **Sankey diagram** — SVG paths flowing from left to right with varying widths. Show how quantities split and merge across stages (budget allocation, user flow, data pipeline).
+- **Swimlane diagram** — Horizontal lanes (rows) representing actors/systems. Steps flow left-to-right across lanes showing handoffs. Great for cross-team processes.
+- **Animated pipeline** — Horizontal or vertical sequence of stages with animated dots/particles moving through. Show data or request flow in real-time feel.
+- **Decision tree** — Binary branching layout. Each node is a question, branches lead to outcomes. Clickable to explore paths.
 
 ### Timelines & Sequences
 
 - **Vertical timeline** — Left border line with dot markers. Each event has date, title, description, optional progress bar and status badge.
 - **Horizontal timeline** — Flex row of connected nodes along a horizontal line. Good for fewer items (3-6).
 - **Progress stepper** — Numbered circles connected by lines. Active step highlighted, completed steps filled.
+- **Gantt-style chart** — Rows of horizontal bars on a time axis. Show overlapping phases, dependencies, or parallel workstreams.
+- **Spiral timeline** — Events arranged along a spiral path (SVG). Unusual and memorable for cyclical or long-spanning histories.
 
 ### Relationships & Structure (Auto-Layout Diagrams)
 
 For any node-and-edge visualization, use a **declarative diagram object** as the `viz` field. The platform auto-positions nodes and routes edges — no manual coordinate math needed.
 
-- **Architecture diagram** — Use `viz: { nodes, edges, groups }` with color-coded nodes, meaningful icons, and labeled groups. The platform lays out each group as a horizontal row, stacks groups vertically, and draws cross-group edges as smooth beziers. See Section A → "Architecture diagrams".
+- **Architecture diagram** — Use `viz: { nodes, edges, groups }` with color-coded nodes, meaningful icons, and labeled groups. See Section A → "Architecture diagrams".
 - **Flowchart** — Same declarative format with a single group or no groups. Set `direction: "TB"` for top-to-bottom flow.
 - **Org chart / hierarchy** — Use `direction: "TB"` and groups for departments. Color-code by role.
 - **Network / data flow** — Multiple groups connected by cross-group edges. Color edges by data type.
@@ -197,17 +214,27 @@ For any node-and-edge visualization, use a **declarative diagram object** as the
 
 - **Periodic table / grid** — CSS grid of cards with colored top bar per category. Hover shows detail.
 - **Kanban board** — Columns with card items. Cards can highlight or shift between columns per slide.
+- **Tier list** — Labeled rows (S/A/B/C/F) with items placed in each tier. Color-coded by rank. Great for evaluations and comparisons.
 
 ### Status & Indicators
 
 - **Risk cards** — Stacked cards with severity SVG icon, title, description, colored severity badge.
 - **Stat delta** — Large number with up/down arrow SVG and percentage change.
+- **Gauge / meter** — SVG arc filled to a percentage. More visual impact than a number alone.
 - **Utilization bars** — Rows with label, horizontal progress bar, percentage.
 - **Checklist** — Items with check/cross SVG icons. Grouped by category.
 
+### Comparisons & Layouts
+
+- **Split comparison** — Two panels side-by-side (before/after, option A/option B). Highlight differences with color.
+- **Podium / ranking** — Three items in a 2-1-3 podium arrangement (second, first, third). Great for top-3 results.
+- **Concentric rings** — Nested circles or rings showing layers (e.g., onion architecture, security perimeters, impact radius).
+- **Quadrant chart** — 2×2 grid with labeled axes. Place items as dots or cards in quadrants (e.g., effort/impact, urgency/importance).
+- **Radar / spider chart** — SVG polygon on radial axes. Compare multiple dimensions of a single entity or overlay two entities.
+
 ### Inventing New Primitives
 
-The catalog above is a starting point. If the topic calls for a visualization not listed, invent one. Combine primitives freely. The only constraints are the design tokens and the slide-based interaction model.
+The catalog above is a starting point. **The best explainers often use visualizations not on this list.** If the topic calls for something new — a custom game board, an animated state machine, a nested ring diagram, a radial burst — build it. The only constraints are the design tokens and the slide-based interaction model.
 
 ---
 
@@ -264,6 +291,8 @@ Before writing any code, plan 4-7 slides:
 1. **Slide 1** = Overview. Show the full visualization at a glance — all elements visible, none dimmed. Give the reader context.
 2. **Slides 2-6** = Each focuses on one concept or subset. Zoom in, highlight, or switch viz type.
 3. **Last slide** (optional) = Summary or call-to-action.
+
+**Vary the viz type across slides.** If slide 1 uses a diagram, slide 2 should use something different (a chart, timeline, table, etc.). Repeating the same viz structure on every slide makes the explainer feel static and monotonous. Each slide transition should feel like a new lens on the topic.
 
 For each slide, define:
 - **label**: Short uppercase label
@@ -389,14 +418,14 @@ Or use the Emberflow MCP/CLI to publish with `content_type: 'explainer'`.
 
 ## H. Reference Templates
 
-Before generating, read the template that best matches your planned visualization:
+Read **one** template before generating to understand the JSON structure, field conventions, and script patterns:
 
 ```
-Read templates/architecture-explainer.json for a flowchart example (SVG nodes + edges, show/active/dimmed states, staggered entrance).
+Read templates/architecture-explainer.json — declarative diagram example (nodes + edges, active/dimmed states, staggered entrance).
 
-Read templates/project-overview-explainer.json for a mixed-viz example (KPIs, timeline, budget table, donut ring, risk cards — different viz type per slide).
+Read templates/project-overview-explainer.json — mixed-viz example (KPIs, timeline, budget table, donut ring, risk cards — different viz type per slide).
 
-Read templates/dashboard-explainer.json for a data viz example (animated bar chart, color-coded values, dataset switching per slide, insight callouts).
+Read templates/dashboard-explainer.json — data viz example (animated bar chart, color-coded values, dataset switching, insight callouts).
 ```
 
-Follow the patterns in the template closely. The templates are the ground truth for JSON structure, CSS conventions, and script patterns.
+Use the templates for **structural reference only** — JSON shape, field naming, script scoping, and animation timing. Do NOT copy their visual style. Your explainer should look distinct from every template. Choose visualization types that match your specific content, not the template's content.
