@@ -421,6 +421,8 @@ Or use the Emberflow MCP/CLI to publish with `content_type: 'explainer'`.
 Read **one** template before generating to understand the JSON structure, field conventions, and script patterns:
 
 ```
+Read templates/diverse-viz-explainer.json — RECOMMENDED: showcases 5 different viz types across slides (funnel, heatmap, radar chart, waterfall, gauges). Start here if you're unsure which template to use.
+
 Read templates/architecture-explainer.json — declarative diagram example (nodes + edges, active/dimmed states, staggered entrance).
 
 Read templates/project-overview-explainer.json — mixed-viz example (KPIs, timeline, budget table, donut ring, risk cards — different viz type per slide).
