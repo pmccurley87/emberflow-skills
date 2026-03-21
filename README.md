@@ -8,12 +8,21 @@ Publish beautiful docs from your AI coding tools to [Emberflow](https://www.embe
 npx emberflow-skills
 ```
 
-The installer auto-detects your project type (Claude Code or Cursor) and copies all skills to the right directory. You'll be publishing docs in under 10 seconds.
+The installer auto-detects which AI coding tools you use and installs skills in the correct format for each.
+
+| Tool | Format | How to use |
+|------|--------|------------|
+| **Claude Code** | `.claude/skills/` | `/ember-publish [topic]` |
+| **Cursor** | `.cursor/rules/*.mdc` | "publish this to Emberflow" |
+| **Windsurf** | `.windsurf/rules/*.md` | "publish this to Emberflow" |
+| **Codex** | `.codex/*.md` | "publish this to Emberflow" |
+
+If multiple tools are detected, skills are installed for all of them.
 
 ### Options
 
 ```bash
-# Install to current project (default)
+# Install to current project (default — auto-detects tools)
 npx emberflow-skills
 
 # Install globally for Claude Code (available in all projects)
@@ -22,9 +31,10 @@ npx emberflow-skills --global
 
 ### What the installer does
 
-1. Detects if you're in a Claude Code project (`.claude/`) or Cursor project (`.cursor/`)
-2. Copies all Emberflow skills into your project's skills directory
-3. Done — use any `/ember-publish` command in your next conversation
+1. Detects tool configs in your project (`.claude/`, `.cursor/`, `.windsurf/`, `.codex/`)
+2. Converts skills to each tool's native format (SKILL.md, .mdc rules, markdown agents)
+3. Copies reference templates for the explainer skill
+4. Done — use the skills in your next conversation
 
 ## Skills
 
@@ -62,7 +72,7 @@ Publish CSV files as an interactive dataset viewer with virtual scroll (handles 
 
 ### `/ember-publish-explainer`
 
-Generate interactive visual explainers — the AI chooses the best visualization type (flowchart, chart, timeline, grid, etc.) for the topic. Slide-based with animated transitions.
+Generate interactive visual explainers — the AI chooses the best visualization type (funnel, heatmap, radar chart, waterfall, timeline, architecture diagram, etc.) for the topic. Slide-based with animated transitions.
 
 ```
 /ember-publish-explainer how our CI/CD pipeline works
@@ -95,12 +105,19 @@ If you prefer not to use npx:
 
 ```bash
 git clone https://github.com/pmccurley87/emberflow-skills.git
+
+# Claude Code
 cp -r emberflow-skills/skills/* .claude/skills/
+
+# Cursor — copy as .mdc rules
+# Windsurf — copy to .windsurf/rules/
+# Codex — copy to .codex/
 ```
 
 ## Works with
 
-- **Claude Code** — skills run natively
-- **Cursor** — skills auto-detected from `.cursor/skills/`
-- **Codex CLI** — supports SKILL.md format
+- **Claude Code** — native skill system with `/slash-commands`
+- **Cursor** — auto-attached rules via `.cursor/rules/`
+- **Windsurf** — rules via `.windsurf/rules/`
+- **Codex** — agent instructions via `.codex/`
 - **Any MCP-compatible tool** — Emberflow also provides an MCP server

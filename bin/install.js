@@ -18,13 +18,38 @@ const green = (s) => `\x1b[32m${s}\x1b[0m`;
 const cyan = (s) => `\x1b[36m${s}\x1b[0m`;
 const orange = (s) => `\x1b[38;5;208m${s}\x1b[0m`;
 
-const targets = [
-  { dir: '.claude/skills', label: 'Claude Code (project)' },
-  { dir: '.cursor/skills', label: 'Cursor (project)' },
-];
+// ── Tool definitions ──
 
-const globalTargets = [
-  { dir: path.join(os.homedir(), '.claude', 'skills'), label: 'Claude Code (global)' },
+const TOOLS = [
+  {
+    type: 'claude',
+    detect: ['.claude'],
+    projectDir: '.claude/skills',
+    globalDir: path.join(os.homedir(), '.claude', 'skills'),
+    label: 'Claude Code',
+    usage: '/ember-publish',
+  },
+  {
+    type: 'cursor',
+    detect: ['.cursor', '.cursorrules'],
+    projectDir: '.cursor/rules',
+    label: 'Cursor',
+    usage: '"publish this to Emberflow"',
+  },
+  {
+    type: 'windsurf',
+    detect: ['.windsurf', '.windsurfrules'],
+    projectDir: '.windsurf/rules',
+    label: 'Windsurf',
+    usage: '"publish this to Emberflow"',
+  },
+  {
+    type: 'codex',
+    detect: ['.codex', 'AGENTS.md'],
+    projectDir: '.codex',
+    label: 'Codex',
+    usage: '"publish this to Emberflow"',
+  },
 ];
 
 const args = process.argv.slice(2);
@@ -77,7 +102,22 @@ function sleep(ms) {
   return new Promise((r) => setTimeout(r, ms));
 }
 
-// ── Skill installer ──
+// ── SKILL.md parsing ──
+
+function parseFrontmatter(content) {
+  const match = content.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
+  if (!match) return { meta: {}, body: content };
+  const meta = {};
+  for (const line of match[1].split('\n')) {
+    const idx = line.indexOf(':');
+    if (idx > 0) {
+      meta[line.slice(0, idx).trim()] = line.slice(idx + 1).trim();
+    }
+  }
+  return { meta, body: match[2] };
+}
+
+// ── File helpers ──
 
 function copyDirRecursive(src, dest) {
   fs.mkdirSync(dest, { recursive: true });
@@ -92,23 +132,145 @@ function copyDirRecursive(src, dest) {
   }
 }
 
-function install(destDir, label) {
+function rewriteTemplatePaths(body, templatesRelPath) {
+  // Rewrite "Read templates/" to use the full relative path from project root
+  return body.replace(
+    /Read templates\//g,
+    `Read ${templatesRelPath}/`
+  );
+}
+
+// ── Installers per tool type ──
+
+function installClaude(name, destDir) {
+  const srcDir = path.join(SKILLS_DIR, name);
+  const skillDir = path.join(destDir, name);
+  fs.mkdirSync(skillDir, { recursive: true });
+  fs.copyFileSync(path.join(srcDir, 'SKILL.md'), path.join(skillDir, 'SKILL.md'));
+
+  const templatesDir = path.join(srcDir, 'templates');
+  if (fs.existsSync(templatesDir)) {
+    copyDirRecursive(templatesDir, path.join(skillDir, 'templates'));
+  }
+}
+
+function installCursor(name, destDir, cwd) {
+  const srcDir = path.join(SKILLS_DIR, name);
+  const skillMd = fs.readFileSync(path.join(srcDir, 'SKILL.md'), 'utf8');
+  const { meta, body } = parseFrontmatter(skillMd);
+
+  // Copy templates to .cursor/rules/<name>/templates/
+  const templatesDir = path.join(srcDir, 'templates');
+  const hasTemplates = fs.existsSync(templatesDir);
+  if (hasTemplates) {
+    copyDirRecursive(templatesDir, path.join(destDir, name, 'templates'));
+  }
+
+  // Rewrite template paths relative to project root
+  let content = body;
+  if (hasTemplates) {
+    const relPath = path.relative(cwd, path.join(destDir, name, 'templates'));
+    content = rewriteTemplatePaths(content, relPath);
+  }
+
+  // Write .mdc file with Cursor frontmatter
+  const description = meta.description || name;
+  const hint = meta['argument-hint'] ? ` — ${meta['argument-hint']}` : '';
+  const mdc = `---
+description: ${description}${hint}
+globs:
+alwaysApply: false
+---
+
+${content}`;
+
+  fs.mkdirSync(destDir, { recursive: true });
+  fs.writeFileSync(path.join(destDir, `${name}.mdc`), mdc);
+}
+
+function installWindsurf(name, destDir, cwd) {
+  const srcDir = path.join(SKILLS_DIR, name);
+  const skillMd = fs.readFileSync(path.join(srcDir, 'SKILL.md'), 'utf8');
+  const { body } = parseFrontmatter(skillMd);
+
+  // Copy templates
+  const templatesDir = path.join(srcDir, 'templates');
+  const hasTemplates = fs.existsSync(templatesDir);
+  if (hasTemplates) {
+    copyDirRecursive(templatesDir, path.join(destDir, name, 'templates'));
+  }
+
+  // Rewrite template paths
+  let content = body;
+  if (hasTemplates) {
+    const relPath = path.relative(cwd, path.join(destDir, name, 'templates'));
+    content = rewriteTemplatePaths(content, relPath);
+  }
+
+  fs.mkdirSync(destDir, { recursive: true });
+  fs.writeFileSync(path.join(destDir, `${name}.md`), content);
+}
+
+function installCodex(name, destDir, cwd) {
+  const srcDir = path.join(SKILLS_DIR, name);
+  const skillMd = fs.readFileSync(path.join(srcDir, 'SKILL.md'), 'utf8');
+  const { meta, body } = parseFrontmatter(skillMd);
+
+  // Copy templates
+  const templatesDir = path.join(srcDir, 'templates');
+  const hasTemplates = fs.existsSync(templatesDir);
+  if (hasTemplates) {
+    copyDirRecursive(templatesDir, path.join(destDir, name, 'templates'));
+  }
+
+  // Rewrite template paths
+  let content = body;
+  if (hasTemplates) {
+    const relPath = path.relative(cwd, path.join(destDir, name, 'templates'));
+    content = rewriteTemplatePaths(content, relPath);
+  }
+
+  fs.mkdirSync(destDir, { recursive: true });
+  fs.writeFileSync(path.join(destDir, `${name}.md`), content);
+}
+
+// ── Main install function ──
+
+function install(destDir, tool, cwd) {
   for (const name of SKILL_NAMES) {
-    const srcDir = path.join(SKILLS_DIR, name);
-    const skillDir = path.join(destDir, name);
-    const destFile = path.join(skillDir, 'SKILL.md');
-    fs.mkdirSync(skillDir, { recursive: true });
-    fs.copyFileSync(path.join(srcDir, 'SKILL.md'), destFile);
-
-    // Copy templates directory if it exists
-    const templatesDir = path.join(srcDir, 'templates');
-    if (fs.existsSync(templatesDir)) {
-      copyDirRecursive(templatesDir, path.join(skillDir, 'templates'));
+    switch (tool.type) {
+      case 'claude':
+        installClaude(name, destDir);
+        break;
+      case 'cursor':
+        installCursor(name, destDir, cwd);
+        break;
+      case 'windsurf':
+        installWindsurf(name, destDir, cwd);
+        break;
+      case 'codex':
+        installCodex(name, destDir, cwd);
+        break;
     }
-
-    console.log(`  ${green('✓')} Installed ${name} to ${path.relative(process.cwd(), skillDir) || skillDir} ${dim(`(${label})`)}`);
+    const relDest = path.relative(cwd, destDir) || destDir;
+    console.log(`  ${green('✓')} ${name} → ${dim(relDest)} ${dim(`(${tool.label})`)}`);
   }
   return true;
+}
+
+// ── Detection ──
+
+function detectTools(cwd) {
+  const detected = [];
+  for (const tool of TOOLS) {
+    for (const marker of tool.detect) {
+      if (fs.existsSync(path.join(cwd, marker))) {
+        detected.push(tool);
+        break;
+      }
+    }
+  }
+  return detected;
 }
 
 // ── Auth flow ──
@@ -128,7 +290,6 @@ async function authenticate() {
   console.log(`  ${dim('Your published docs will be attributed to your account.')}`);
   console.log();
 
-  // Request device code
   let resp;
   try {
     resp = await request('POST', `${EMBERFLOW_URL}/api/device-code`);
@@ -151,7 +312,6 @@ async function authenticate() {
   console.log(`  Your code: ${bold(code)}`);
   console.log();
 
-  // Try to open the URL automatically
   try {
     const { exec } = require('child_process');
     if (process.platform === 'win32') {
@@ -165,8 +325,7 @@ async function authenticate() {
 
   process.stdout.write(`  ${dim('Waiting for approval...')}`);
 
-  // Poll for approval
-  const maxAttempts = 60; // 3 minutes at 3s intervals
+  const maxAttempts = 60;
   for (let i = 0; i < maxAttempts; i++) {
     await sleep(3000);
 
@@ -174,7 +333,6 @@ async function authenticate() {
       const status = await request('GET', `${EMBERFLOW_URL}/api/device-code/${code}`);
 
       if (status.data.status === 'approved' && status.data.session_token) {
-        // Strip cookie name prefix if present (e.g. "__Secure-better-auth.session_token=VALUE" -> "VALUE")
         const raw = status.data.session_token.replace(/^(?:__Secure-)?better-auth\.session_token=/, '');
         fs.mkdirSync(path.dirname(TOKEN_PATH), { recursive: true });
         fs.writeFileSync(TOKEN_PATH, JSON.stringify({ token: raw }, null, 2));
@@ -194,7 +352,6 @@ async function authenticate() {
       // Network error, keep polling
     }
 
-    // Spinner
     const frames = ['⠋','⠙','⠹','⠸','⠼','⠴','⠦','⠧','⠇','⠏'];
     process.stdout.clearLine(0);
     process.stdout.cursorTo(0);
@@ -217,38 +374,48 @@ async function main() {
   console.log();
 
   if (!authOnly) {
+    const cwd = process.cwd();
     let installed = 0;
 
     if (isGlobal) {
-      for (const t of globalTargets) {
-        install(t.dir, t.label);
-        installed++;
-      }
+      // Global install — Claude Code only
+      const claudeTool = TOOLS[0];
+      install(claudeTool.globalDir, claudeTool, cwd);
+      installed++;
     } else {
-      const cwd = process.cwd();
-      const detected = [];
-
-      for (const t of targets) {
-        const parent = path.dirname(path.join(cwd, t.dir));
-        if (fs.existsSync(path.join(cwd, t.dir)) || fs.existsSync(parent)) {
-          detected.push(t);
-        }
-      }
+      const detected = detectTools(cwd);
 
       if (detected.length === 0) {
-        detected.push(targets[0]);
+        // Default to Claude Code
+        detected.push(TOOLS[0]);
+        console.log(`  ${dim('No tool config detected — defaulting to Claude Code')}`);
+        console.log();
+      } else {
+        console.log(`  ${dim(`Detected: ${detected.map(t => t.label).join(', ')}`)}`);
+        console.log();
       }
 
-      for (const t of detected) {
-        install(path.join(cwd, t.dir), t.label);
+      for (const tool of detected) {
+        const destDir = path.join(cwd, tool.projectDir);
+        install(destDir, tool, cwd);
         installed++;
+        console.log();
       }
     }
 
     if (installed > 0) {
-      console.log();
-      console.log(`  Use: ${cyan('/ember-publish')} ${dim('[topic]')}  — auto-picks format (doc, JSON, Space, or explainer)`);
-      console.log(`       ${cyan('/ember-publish-doc')} ${dim('[topic]')}  ${cyan('/ember-publish-json')} ${dim('[data]')}  ${cyan('/ember-publish-space')} ${dim('[directory]')}  ${cyan('/ember-publish-explainer')} ${dim('[topic]')}`);
+      const detected = isGlobal ? [TOOLS[0]] : (detectTools(cwd).length > 0 ? detectTools(cwd) : [TOOLS[0]]);
+      const claudeDetected = detected.some(t => t.type === 'claude');
+      const othersDetected = detected.filter(t => t.type !== 'claude');
+
+      if (claudeDetected) {
+        console.log(`  ${bold('Claude Code:')} ${cyan('/ember-publish')} ${dim('[topic]')}  — auto-picks format`);
+        console.log(`       ${cyan('/ember-publish-doc')} ${dim('[topic]')}  ${cyan('/ember-publish-json')} ${dim('[data]')}  ${cyan('/ember-publish-explainer')} ${dim('[topic]')}`);
+      }
+      if (othersDetected.length > 0) {
+        const labels = othersDetected.map(t => t.label).join(', ');
+        console.log(`  ${bold(`${labels}:`)} Just ask ${cyan('"publish this to Emberflow"')} or ${cyan('"create an Emberflow explainer about X"')}`);
+      }
     }
   }
 
