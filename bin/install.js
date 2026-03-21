@@ -45,10 +45,11 @@ const TOOLS = [
   },
   {
     type: 'codex',
-    detect: ['.codex', 'AGENTS.md'],
-    projectDir: '.codex',
+    detect: ['.agents', 'AGENTS.md'],
+    projectDir: '.agents/skills',
+    globalDir: path.join(os.homedir(), '.agents', 'skills'),
     label: 'Codex',
-    usage: '"publish this to Emberflow"',
+    usage: '$ember-publish',
   },
 ];
 
@@ -212,26 +213,17 @@ function installWindsurf(name, destDir, cwd) {
 }
 
 function installCodex(name, destDir, cwd) {
+  // Codex uses the same SKILL.md format as Claude Code, discovered from .agents/skills/<name>/
   const srcDir = path.join(SKILLS_DIR, name);
-  const skillMd = fs.readFileSync(path.join(srcDir, 'SKILL.md'), 'utf8');
-  const { meta, body } = parseFrontmatter(skillMd);
+  const skillDir = path.join(destDir, name);
+  fs.mkdirSync(skillDir, { recursive: true });
+  fs.copyFileSync(path.join(srcDir, 'SKILL.md'), path.join(skillDir, 'SKILL.md'));
 
   // Copy templates
   const templatesDir = path.join(srcDir, 'templates');
-  const hasTemplates = fs.existsSync(templatesDir);
-  if (hasTemplates) {
-    copyDirRecursive(templatesDir, path.join(destDir, name, 'templates'));
+  if (fs.existsSync(templatesDir)) {
+    copyDirRecursive(templatesDir, path.join(skillDir, 'templates'));
   }
-
-  // Rewrite template paths
-  let content = body;
-  if (hasTemplates) {
-    const relPath = path.relative(cwd, path.join(destDir, name, 'templates'));
-    content = rewriteTemplatePaths(content, relPath);
-  }
-
-  fs.mkdirSync(destDir, { recursive: true });
-  fs.writeFileSync(path.join(destDir, `${name}.md`), content);
 }
 
 // ── Main install function ──
@@ -378,10 +370,13 @@ async function main() {
     let installed = 0;
 
     if (isGlobal) {
-      // Global install — Claude Code only
-      const claudeTool = TOOLS[0];
-      install(claudeTool.globalDir, claudeTool, cwd);
-      installed++;
+      // Global install — Claude Code + Codex (both support global skills)
+      for (const tool of TOOLS) {
+        if (tool.globalDir) {
+          install(tool.globalDir, tool, cwd);
+          installed++;
+        }
+      }
     } else {
       const detected = detectTools(cwd);
 
@@ -404,17 +399,20 @@ async function main() {
     }
 
     if (installed > 0) {
-      const detected = isGlobal ? [TOOLS[0]] : (detectTools(cwd).length > 0 ? detectTools(cwd) : [TOOLS[0]]);
-      const claudeDetected = detected.some(t => t.type === 'claude');
-      const othersDetected = detected.filter(t => t.type !== 'claude');
+      const tools = isGlobal ? TOOLS.filter(t => t.globalDir) : (detectTools(cwd).length > 0 ? detectTools(cwd) : [TOOLS[0]]);
 
-      if (claudeDetected) {
-        console.log(`  ${bold('Claude Code:')} ${cyan('/ember-publish')} ${dim('[topic]')}  — auto-picks format`);
-        console.log(`       ${cyan('/ember-publish-doc')} ${dim('[topic]')}  ${cyan('/ember-publish-json')} ${dim('[data]')}  ${cyan('/ember-publish-explainer')} ${dim('[topic]')}`);
-      }
-      if (othersDetected.length > 0) {
-        const labels = othersDetected.map(t => t.label).join(', ');
-        console.log(`  ${bold(`${labels}:`)} Just ask ${cyan('"publish this to Emberflow"')} or ${cyan('"create an Emberflow explainer about X"')}`);
+      for (const tool of tools) {
+        if (tool.type === 'claude') {
+          console.log(`  ${bold('Claude Code:')} ${cyan('/ember-publish')} ${dim('[topic]')}  — auto-picks format`);
+          console.log(`       ${cyan('/ember-publish-doc')}  ${cyan('/ember-publish-json')}  ${cyan('/ember-publish-explainer')}  ${cyan('/ember-publish-space')}`);
+        } else if (tool.type === 'codex') {
+          console.log(`  ${bold('Codex:')} ${cyan('$ember-publish')} ${dim('[topic]')}  — invoke skills with $ prefix`);
+          console.log(`       ${cyan('$ember-publish-doc')}  ${cyan('$ember-publish-json')}  ${cyan('$ember-publish-explainer')}  ${cyan('$ember-publish-space')}`);
+        } else if (tool.type === 'cursor') {
+          console.log(`  ${bold('Cursor:')} Type ${cyan('@ember-publish-explainer')} or ask ${cyan('"publish this to Emberflow"')}`);
+        } else if (tool.type === 'windsurf') {
+          console.log(`  ${bold('Windsurf:')} Ask ${cyan('"publish this to Emberflow"')} or ${cyan('"create an Emberflow explainer"')}`);
+        }
       }
     }
   }

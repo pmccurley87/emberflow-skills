@@ -10,12 +10,12 @@ npx emberflow-skills
 
 The installer auto-detects which AI coding tools you use and installs skills in the correct format for each.
 
-| Tool | Format | How to use |
-|------|--------|------------|
+| Tool | Install location | How to invoke |
+|------|-----------------|---------------|
 | **Claude Code** | `.claude/skills/` | `/ember-publish [topic]` |
-| **Cursor** | `.cursor/rules/*.mdc` | "publish this to Emberflow" |
-| **Windsurf** | `.windsurf/rules/*.md` | "publish this to Emberflow" |
-| **Codex** | `.codex/*.md` | "publish this to Emberflow" |
+| **Codex** | `.agents/skills/` | `$ember-publish [topic]` |
+| **Cursor** | `.cursor/rules/*.mdc` | `@ember-publish-explainer` or ask naturally |
+| **Windsurf** | `.windsurf/rules/*.md` | Ask naturally: "publish this to Emberflow" |
 
 If multiple tools are detected, skills are installed for all of them.
 
@@ -31,8 +31,11 @@ npx emberflow-skills --global
 
 ### What the installer does
 
-1. Detects tool configs in your project (`.claude/`, `.cursor/`, `.windsurf/`, `.codex/`)
-2. Converts skills to each tool's native format (SKILL.md, .mdc rules, markdown agents)
+1. Detects tool configs in your project (`.claude/`, `.agents/`, `.cursor/`, `.windsurf/`)
+2. Installs skills in each tool's native format:
+   - Claude Code & Codex: `SKILL.md` with frontmatter (native skill system)
+   - Cursor: `.mdc` rules with auto-attach descriptions
+   - Windsurf: `.md` rules
 3. Copies reference templates for the explainer skill
 4. Done — use the skills in your next conversation
 
@@ -109,15 +112,17 @@ git clone https://github.com/pmccurley87/emberflow-skills.git
 # Claude Code
 cp -r emberflow-skills/skills/* .claude/skills/
 
-# Cursor — copy as .mdc rules
+# Codex — same SKILL.md format
+cp -r emberflow-skills/skills/* .agents/skills/
+
+# Cursor — copy as .mdc rules (or use npx for auto-conversion)
 # Windsurf — copy to .windsurf/rules/
-# Codex — copy to .codex/
 ```
 
 ## Works with
 
-- **Claude Code** — native skill system with `/slash-commands`
-- **Cursor** — auto-attached rules via `.cursor/rules/`
-- **Windsurf** — rules via `.windsurf/rules/`
-- **Codex** — agent instructions via `.codex/`
+- **Claude Code** — native skill system, invoke with `/ember-publish`
+- **Codex** — native skill system, invoke with `$ember-publish`
+- **Cursor** — auto-attached rules, invoke with `@ember-publish-explainer` or ask naturally
+- **Windsurf** — rules loaded automatically, ask naturally
 - **Any MCP-compatible tool** — Emberflow also provides an MCP server
