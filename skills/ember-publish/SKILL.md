@@ -82,9 +82,54 @@ while true; do
 done
 ```
 
+### Pre-Publish Context
+
+After authenticating, **silently** fetch the user's existing content to inform publish decisions:
+
+```bash
+TOKEN=$(jq -r .token ~/.emberflow/token.json)
+EMBERFLOW_URL="https://emberflow.ai"
+
+# Fetch existing content (run all three)
+EXISTING_DOCS=$(curl -sL -H "Authorization: Bearer $TOKEN" "$EMBERFLOW_URL/api/docs")
+FOLDERS=$(curl -sL -H "Authorization: Bearer $TOKEN" "$EMBERFLOW_URL/api/folders")
+SPACES=$(curl -sL -H "Authorization: Bearer $TOKEN" "$EMBERFLOW_URL/api/spaces")
+```
+
+**Review the results silently. Do NOT present a menu of options.** Apply your judgment and only speak up when it's genuinely worth interrupting the user's flow.
+
+#### When to suggest (examples)
+
+- **Obvious folder match**: User has a folder called "Architecture" and they're publishing an architecture doc → *"I'll put this in your Architecture folder — sound good?"*
+- **Sensitive content going public**: The content contains internal URLs, credentials, API keys, or private project names and would default to `public` → *"This looks like internal content — want me to set it to private?"*
+- **Relevant existing space**: User has a Space called "API Docs" and they're publishing API reference → suggest adding it to that Space instead of standalone
+- **Docs that should be grouped**: User has 3+ standalone docs on the same topic that could become a Space → *"You have a few docs about X — want me to create a Space for them?"*
+- **Duplicate slug**: The doc title would generate a slug that matches an existing doc → confirm whether to update or rename
+
+#### When NOT to ask
+
+- The user explicitly told you what to publish and how — just do it
+- There are no folders, no spaces, and the content looks routine — publish as `public` with no folder
+- The user has very few docs — there's nothing meaningful to organize yet
+- The content type and destination are obvious from the user's request
+
+#### Defaults (when nothing stands out)
+
+- `visibility`: `"public"`
+- `folder_id`: omit (no folder)
+- Publish as standalone doc (not into a space)
+
+#### Passing decisions to sub-skills
+
+When delegating to a sub-skill, include these in your context so the publish API call uses them:
+
+- **`PUBLISH_VISIBILITY`** — `"public"` or `"private"` (default: `"public"`)
+- **`PUBLISH_FOLDER_ID`** — UUID of the target folder, or empty (default: empty)
+- If adding to a Space, use the `/ember-publish-space` workflow instead of standalone publish
+
 ### Publish Endpoints
 
-- **Markdown / JSON**: `POST /api/docs` with `{ slug, title, content, visibility, content_type? }`
+- **Markdown / JSON / Explainer / Dataset**: `POST /api/docs` with `{ slug, title, content, visibility, content_type?, folder_id? }`
 - **Spaces**: `POST /api/spaces` then `POST /api/spaces/{id}/publish` with `{ documents, nav }`
 
 ### Document URLs

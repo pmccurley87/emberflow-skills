@@ -409,7 +409,11 @@ CONTENT=$(cat {topic-slug}-explainer.json)
 curl -X POST "${EMBERFLOW_URL}/api/docs" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer ${EMBERFLOW_TOKEN}" \
-  -d "{\"slug\": \"{topic-slug}-explainer\", \"title\": \"{Title}\", \"content\": $(echo "$CONTENT" | jq -Rs .), \"content_type\": \"explainer\"}"
+  -d "$(jq -n --arg slug "{topic-slug}-explainer" --arg title "{Title}" \
+    --arg content "$CONTENT" \
+    --arg visibility "${PUBLISH_VISIBILITY:-public}" --arg folder_id "${PUBLISH_FOLDER_ID:-}" \
+    '{slug: $slug, title: $title, content: $content, content_type: "explainer", visibility: $visibility}
+     + (if $folder_id != "" then {folder_id: $folder_id} else {} end)')"
 ```
 
 Or use the Emberflow MCP/CLI to publish with `content_type: 'explainer'`.

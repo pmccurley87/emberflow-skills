@@ -245,7 +245,9 @@ curl -s -X POST "$EMBERFLOW_URL/api/docs" \
   -H 'Content-Type: application/json' \
   -H "Authorization: Bearer $TOKEN" \
   -d "$(jq -n --arg slug "$SLUG" --arg title "$TITLE" --rawfile content "$FILE_PATH" \
-    '{slug: $slug, title: $title, content: $content, visibility: "public"}')"
+    --arg visibility "${PUBLISH_VISIBILITY:-public}" --arg folder_id "${PUBLISH_FOLDER_ID:-}" \
+    '{slug: $slug, title: $title, content: $content, visibility: $visibility}
+     + (if $folder_id != "" then {folder_id: $folder_id} else {} end)')"
 ```
 
 The response JSON includes the URL. Documents are viewable at:
