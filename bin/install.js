@@ -7,7 +7,7 @@ const http = require('http');
 const readline = require('readline');
 const os = require('os');
 
-const SKILL_NAMES = ['ember-publish', 'ember-publish-doc', 'ember-publish-dataset', 'ember-publish-explainer', 'ember-publish-json', 'ember-publish-space'];
+const SKILL_NAMES = ['ember-publish', 'ember-publish-doc', 'ember-publish-dataset', 'ember-publish-explainer', 'ember-publish-json', 'ember-publish-space', 'ember-manage'];
 const SKILLS_DIR = path.join(__dirname, '..', 'skills');
 const EMBERFLOW_URL = 'https://www.emberflow.ai';
 const TOKEN_PATH = path.join(os.homedir(), '.emberflow', 'token.json');

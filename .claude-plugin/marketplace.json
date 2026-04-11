@@ -38,6 +38,11 @@
       "name": "ember-publish-space",
       "source": "./plugins/ember-publish-space",
       "description": "Publish a directory of markdown files as an Emberflow Space — a multi-page docs site with sidebar navigation"
+    },
+    {
+      "name": "ember-manage",
+      "source": "./plugins/ember-manage",
+      "description": "Manage your Emberflow account and content — list docs, folders, spaces, check auth status, delete or move documents"
     }
   ]
 }

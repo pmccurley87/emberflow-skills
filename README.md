@@ -89,6 +89,16 @@ Publish a directory of markdown files as a multi-page docs site with sidebar nav
 /ember-publish-space the docs/ directory as API documentation
 ```
 
+### `/ember-manage`
+
+Manage your Emberflow account and content — check who you're logged in as, list your docs/folders/spaces, delete or move documents.
+
+```
+/ember-manage whoami
+/ember-manage list docs
+/ember-manage delete my-old-doc
+```
+
 ## What you get
 
 - Interactive emberDiagrams with zoom, pan, and fullscreen
