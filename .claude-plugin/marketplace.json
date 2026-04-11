@@ -1,0 +1,43 @@
+{
+  "name": "emberflow-skills",
+  "owner": {
+    "name": "Patrick McCurley"
+  },
+  "metadata": {
+    "description": "Publish docs, JSON explorers, datasets, visual explainers, and multi-page Spaces to Emberflow from Claude Code",
+    "version": "1.14.0",
+    "pluginRoot": "./plugins"
+  },
+  "plugins": [
+    {
+      "name": "ember-publish",
+      "source": "./plugins/ember-publish",
+      "description": "Publish content to Emberflow — automatically picks the right format (document, JSON explorer, or Space) based on your content"
+    },
+    {
+      "name": "ember-publish-doc",
+      "source": "./plugins/ember-publish-doc",
+      "description": "Publish a markdown document with emberDiagrams to Emberflow for hosted viewing with comments"
+    },
+    {
+      "name": "ember-publish-json",
+      "source": "./plugins/ember-publish-json",
+      "description": "Publish JSON data to Emberflow as an interactive explorer with expand/collapse, search, and multi-payload tabs"
+    },
+    {
+      "name": "ember-publish-dataset",
+      "source": "./plugins/ember-publish-dataset",
+      "description": "Publish CSV files to Emberflow as an interactive dataset viewer with search, sort, filter, pagination, and CSV export"
+    },
+    {
+      "name": "ember-publish-explainer",
+      "source": "./plugins/ember-publish-explainer",
+      "description": "Generate an interactive visual explainer — AI chooses the best visualization (flowchart, chart, timeline, grid, etc.) for the topic"
+    },
+    {
+      "name": "ember-publish-space",
+      "source": "./plugins/ember-publish-space",
+      "description": "Publish a directory of markdown files as an Emberflow Space — a multi-page docs site with sidebar navigation"
+    }
+  ]
+}
